@@ -1,0 +1,91 @@
+class ModCommander:
+    def __init__(self, game_directory):
+        self.game_directory = game_directory
+        self.mods_directory = os.path.join(game_directory, "mods")
+        self.active_mods = []
+        self.load_config()
+
+    def load_config(self):
+        """Load existing mod configuration if available."""
+        config_path = os.path.join(self.mods_directory, "modconfig.json")
+        if os.path.exists(config_path):
+            with open(config_path, "r") as config_file:
+                config = json.load(config_file)
+                self.active_mods = config.get("active_mods", [])
+        else:
+            print("No existing configuration found. Starting fresh.")
+
+    def save_config(self):
+        """Save the current mod configuration."""
+        config_path = os.path.join(self.mods_directory, "modconfig.json")
+        with open(config_path, "w") as config_file:
+            json.dump({"active_mods": self.active_mods}, config_file, indent=4)
+
+    def list_mods(self):
+        """List all available mods in the mods directory."""
+        if not os.path.exists(self.mods_directory):
+            os.makedirs(self.mods_directory)
+        mods = [f for f in os.listdir(self.mods_directory) if os.path.isdir(os.path.join(self.mods_directory, f))]
+        print("Available mods:")
+        for mod in mods:
+            status = "Active" if mod in self.active_mods else "Inactive"
+            print(f"- {mod} [{status}]")
+        return mods
+
+    def activate_mod(self, mod_name):
+        """Activate a specific mod."""
+        if mod_name in self.active_mods:
+            print(f"Mod '{mod_name}' is already active.")
+        else:
+            self.active_mods.append(mod_name)
+            print(f"Mod '{mod_name}' activated.")
+        self.save_config()
+
+    def deactivate_mod(self, mod_name):
+        """Deactivate a specific mod."""
+        if mod_name in self.active_mods:
+            self.active_mods.remove(mod_name)
+            print(f"Mod '{mod_name}' deactivated.")
+        else:
+            print(f"Mod '{mod_name}' is not active.")
+        self.save_config()
+
+    def resolve_conflicts(self):
+        """Resolve potential conflicts between active mods."""
+        print("Checking for conflicts...")
+        # Dummy conflict resolution logic
+        if len(self.active_mods) > 3:
+            print("Too many active mods! Consider deactivating some.")
+        else:
+            print("No conflicts detected.")
+
+if __name__ == "__main__":
+    print("Welcome to ModCommander!")
+    game_directory = input("Enter the path to your game directory: ")
+    commander = ModCommander(game_directory)
+
+    while True:
+        print("\nOptions:")
+        print("1. List mods")
+        print("2. Activate mod")
+        print("3. Deactivate mod")
+        print("4. Resolve conflicts")
+        print("5. Exit")
+
+        choice = input("Choose an option: ")
+
+        if choice == "1":
+            commander.list_mods()
+        elif choice == "2":
+            mod_name = input("Enter the name of the mod to activate: ")
+            commander.activate_mod(mod_name)
+        elif choice == "3":
+            mod_name = input("Enter the name of the mod to deactivate: ")
+            commander.deactivate_mod(mod_name)
+        elif choice == "4":
+            commander.resolve_conflicts()
+        elif choice == "5":
+            print("Exiting ModCommander. Goodbye!")
+            break
+        else:
+            print("Invalid choice. Please try again.")
